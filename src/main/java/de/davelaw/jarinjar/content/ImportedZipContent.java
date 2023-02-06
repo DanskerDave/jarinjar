@@ -75,7 +75,7 @@ public class ImportedZipContent extends Content {
 				/*
 				 * Write the Entry bytes to our Runtime Zip...
 				 */
-				runtimeZipper.putEntry(folderNameSlash + entry.getName(), entry.getLastModifiedTime(), entryBytes);
+				runtimeZipper.putEntry(folderNameSlash + entry.getName(), entry.getLastModifiedTime(), entryBytes, 0, entryOffset);
 			}
 		} catch (final IOException e) {
 			LOG.error("jar IN jar.: error writing Zip to Folder {}", folderName, e.getMessage());

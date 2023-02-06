@@ -68,6 +68,10 @@ public final class Zipper {
 	}
 
 	public void putEntry(final String entryName, final FileTime entryTime, final byte[] entryBytes) {
+		putEntry        (             entryName,                entryTime,              entryBytes,               0, entryBytes.length);
+	}
+
+	public void putEntry(final String entryName, final FileTime entryTime, final byte[] entryBytes, final int offset, final int length) {
 		try {
 			this.entryCount++;
 			this.updateMaxFileTime(entryTime);
@@ -76,7 +80,7 @@ public final class Zipper {
 			/**/                              entry.setLastModifiedTime         (entryTime);
 
 			this.zipOutputStream.putNextEntry(entry);
-			this.zipOutputStream.write       (entryBytes);
+			this.zipOutputStream.write       (entryBytes, offset, length);
 			this.zipOutputStream.closeEntry();
 
 			LOG.debug("put Member.: {}\t{}\tL={}\t{}", this.entryCount, entryTime, entryBytes.length, entryName);
