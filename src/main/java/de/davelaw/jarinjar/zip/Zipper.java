@@ -1,7 +1,9 @@
 package de.davelaw.jarinjar.zip;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -19,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.davelaw.jarinjar.function.ExConsumer;
+import de.davelaw.jarinjar.util.Util;
 
 public final class Zipper {
 
@@ -72,6 +75,18 @@ public final class Zipper {
 	}
 
 	public void putEntry(final String entryName, final FileTime entryTime, final byte[] entryBytes, final int offset, final int length) {
+
+		putEntry        (             entryName,                entryTime, new ByteArrayInputStream(entryBytes, offset, length), length);
+	}
+
+	/**
+	 * 
+	 * @param entryName
+	 * @param entryTime
+	 * @param inputStream      the Caller is responsible for closing this Stream
+	 * @param estimatedLength  some Zips, particularly under JDK 8, return -1 as the length
+	 */
+	public void putEntry(final String entryName, final FileTime entryTime, final InputStream inputStream, final long estimatedLength) {
 		try {
 			this.entryCount++;
 			this.updateMaxFileTime(entryTime);
@@ -80,13 +95,15 @@ public final class Zipper {
 			/**/                              entry.setLastModifiedTime         (entryTime);
 
 			this.zipOutputStream.putNextEntry(entry);
-			this.zipOutputStream.write       (entryBytes, offset, length);
+
+			final long actualLength = Util.copyBytes(inputStream/* (closed by caller) */, this.zipOutputStream/* (closed in our Constructor) */);
+
 			this.zipOutputStream.closeEntry();
 
-			LOG.debug("put Member.: {}\t{}\tL={}\t{}", this.entryCount, entryTime, entryBytes.length, entryName);
+			LOG.debug("put Member.: {}\t{}\tL={}\t{}", this.entryCount, entryTime,    actualLength, entryName);
 		}
 		catch (final IOException e) {
-			LOG.error("put Member.: {}\t{}\tL={}\t{}", this.entryCount, entryTime, entryBytes.length, entryName, e);
+			LOG.error("put Member.: {}\t{}\tL={}\t{}", this.entryCount, entryTime, estimatedLength, entryName, e);
 			throw new UncheckedIOException(e);
 		}
 	}

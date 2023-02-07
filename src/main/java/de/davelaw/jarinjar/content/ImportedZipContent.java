@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import de.davelaw.jarinjar.spec.JarSpecFactory.JarFolder;
 import de.davelaw.jarinjar.spec.Root;
+import de.davelaw.jarinjar.util.IgnoreCloseInputStream;
 import de.davelaw.jarinjar.zip.JarInJarManifest;
 import de.davelaw.jarinjar.zip.Zipper;
 
@@ -62,20 +63,12 @@ public class ImportedZipContent extends Content {
 
 				LOG.trace("Import Zip.: {} {} {}", entry.getSize(), folderNameSlash, entry.getName());
 				/*
-				 * Read in Entry bytes from Zip...
-				 */
-				final byte[] entryBytes  = new byte[(int) entry.getSize() + 1]; // MUST add 1, otherwise endless while-read-bytes-loop!
-				/**/  int    entryOffset = 0;
-				/**/  int    byteCount;
-
-				while ((byteCount = zis.read(entryBytes, entryOffset, entryBytes.length - entryOffset)) != -1 ) {
-					entryOffset += byteCount;
-				}
-				zis.closeEntry();
-				/*
 				 * Write the Entry bytes to our Runtime Zip...
+				 * (ignoring any calls to close(), because we're handling that)
 				 */
-				runtimeZipper.putEntry(folderNameSlash + entry.getName(), entry.getLastModifiedTime(), entryBytes, 0, entryOffset);
+				runtimeZipper.putEntry(folderNameSlash + entry.getName(), entry.getLastModifiedTime(), new IgnoreCloseInputStream(zis), entry.getSize());
+
+				zis.closeEntry();
 			}
 		} catch (final IOException e) {
 			LOG.error("jar IN jar.: error writing Zip to Folder {}", folderName, e.getMessage());

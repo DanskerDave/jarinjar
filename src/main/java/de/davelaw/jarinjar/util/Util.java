@@ -1,5 +1,8 @@
 package de.davelaw.jarinjar.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.regex.Pattern;
 
@@ -122,5 +125,30 @@ public class Util {
 	public static String unBackSlash(final String path) {
 
 		return path.replace(BACKSLASH_CHAR, SLASH_CHAR);
+	}
+
+	/**
+	 * Copy bytes from the
+	 * {@link  InputStream} to the
+	 * {@link  OutputStream}.
+	 * <p>
+	 * Note.: the caller is responsible for closing the Streams.
+	 * 
+	 * @param inputStream
+	 * @param outputStream
+	 * @return
+	 * @throws IOException
+	 */
+	public static long copyBytes(final InputStream inputStream, final OutputStream outputStream) throws IOException {
+
+		final byte[]  bytes     = new byte[8192];
+		/**/  long    byteTotal = 0;
+		/**/  int     byteCount;
+
+		while (        -1 != (byteCount =  inputStream.read (bytes))) {
+			/**/                          outputStream.write(bytes,  0, byteCount);
+			/**/byteTotal +=  byteCount;
+		}
+		return  byteTotal;
 	}
 }

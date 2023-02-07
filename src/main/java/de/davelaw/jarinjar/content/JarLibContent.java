@@ -3,14 +3,9 @@ package de.davelaw.jarinjar.content;
 import static de.davelaw.jarinjar.util.Util.appendSlash;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import de.davelaw.jarinjar.spec.JarSpecFactory.JarFolder;
 import de.davelaw.jarinjar.spec.Root;
@@ -19,7 +14,7 @@ import de.davelaw.jarinjar.zip.Zipper;
 
 public class JarLibContent extends Content {
 
-	private static final Logger  LOG               = LoggerFactory.getLogger(JarLibContent.class);
+//	private static final Logger  LOG               = LoggerFactory.getLogger(JarLibContent.class);
 
 	private        final Path    jarLib;
 
@@ -47,17 +42,6 @@ public class JarLibContent extends Content {
 	@Override
 	public void writeRuntime(final String folderName, final Zipper runtimeZipper) {
 
-		final String folderNameSlash = appendSlash(folderName);
-
-		try {
-			runtimeZipper.putEntry(
-					folderNameSlash         + this.jarLib.getFileName(),
-					Files.getLastModifiedTime(this.jarLib),
-					Files.readAllBytes       (this.jarLib));
-		}
-		catch (final IOException e) {
-			LOG.error("jar IN jar.: error writing to Folder {} from Jar-Lib {}", folderName, this.jarLib, e.getMessage());
-			throw new UncheckedIOException(e);
-		}
+		runtimeZipper.putEntry(appendSlash(folderName) + this.jarLib.getFileName(), this.jarLib);
 	}
 }
